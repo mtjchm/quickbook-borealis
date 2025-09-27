@@ -3,19 +3,27 @@ import bcrypt from 'bcryptjs';
 import { createTokenResponse } from '../../../../lib/auth/jwt';
 import { prisma } from '../../../../lib/prisma/prisma';
 import { Role } from '../../../../lib/types'; // import Role enum
+import { z } from 'zod';
+
+const registerSchema = z.object({
+  email: z.email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  phone: z.string().optional().nullable(),
+});
 
 //user registration
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, firstName, lastName, phone } = await request.json();
-
-    // Validate input
-    if (!email || !password || !firstName || !lastName) {
+    const parseResult = registerSchema.safeParse(await request.json());
+    if (!parseResult.success) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: parseResult.error.flatten() },
         { status: 400 }
       );
     }
+    const { email, password, firstName, lastName, phone } = parseResult.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });

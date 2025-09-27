@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { Role, BookingStatus } from "../types/index";
+import { Role, BookingStatus } from "../lib/types/index";
 const dotenv = require("dotenv");
 
 dotenv.config({ path: "./.env.local" });
