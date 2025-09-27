@@ -1,0 +1,29 @@
+{
+    "success": true,
+    "data": {
+        "id": 101,
+        "customerId": 11,
+        "customer": {
+            "id": 11,
+            "firstName": "Alice",
+            "lastName": "Smith",
+            "email": "alice@example.com",
+            "phone": "123-456-7890"
+        },
+        "companyId": 1,
+        "company": {
+            "id": 1,
+            "name": "Fresh Cuts Salon"
+        },
+        "bookingDate": "2025-09-30T00:00:00.000Z",
+        "startTime": "2025-09-30T09:00:00.000Z",
+        "endTime": "2025-09-30T10:00:00.000Z",
+        "status": "confirmed",
+        "customerNotes": "Please use organic shampoo.",
+        "providerNotes": "Prefers window seat.",
+        "totalPrice": "65.00",
+        "emailSent": true,
+        "createdAt": "2025-09-01T12:00:00.000Z",
+        "updatedAt": "2025-09-02T12:00:00.000Z"
+    }
+}

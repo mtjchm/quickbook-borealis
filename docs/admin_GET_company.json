@@ -1,0 +1,24 @@
+{
+    "success": true,
+    "data": {
+        "id": 1,
+        "name": "Fresh Cuts Salon",
+        "description": "Modern salon for stylish haircuts.",
+        "address": "123 Main St",
+        "phone": "555-1234",
+        "email": "contact@freshcuts.com",
+        "serviceName": "Haircut & Style",
+        "serviceDescription": "Professional haircut with wash and styling",
+        "durationMinutes": 60,
+        "price": "65.00",
+        "isActive": true,
+        "owner": {
+            "id": 21,
+            "email": "bob@example.com",
+            "firstName": "Bob",
+            "lastName": "Johnson"
+        },
+        "createdAt": "2025-08-01T10:00:00.000Z",
+        "updatedAt": "2025-09-01T10:00:00.000Z"
+    }
+}
