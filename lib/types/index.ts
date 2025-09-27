@@ -10,3 +10,16 @@ export enum BookingStatus {
   CANCELLED = "cancelled",
   COMPLETED = "completed",
 }
+
+export interface JWTPayload {
+  userId: number;
+  email: string;
+  role: Role; 
+  iat?: number; 
+  exp?: number;  
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
