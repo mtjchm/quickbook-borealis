@@ -6,6 +6,7 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }) {
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: ""
   });
@@ -25,13 +26,35 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }) {
     setError("");
 
     // Validace
-    if (formData.password !== formData.confirmPassword) {
-      setError("Hesla se neshodují");
+    if (!formData.firstName.trim()) {
+      setError("Jméno je povinné");
+      return;
+    }
+
+    if (!formData.lastName.trim()) {
+      setError("Příjmení je povinné");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError("Email je povinný");
+      return;
+    }
+
+    // Validace email formátu
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Neplatný formát emailu");
       return;
     }
 
     if (formData.password.length < 8) {
       setError("Heslo musí mít alespoň 8 znaků");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Hesla se neshodují");
       return;
     }
 
@@ -47,15 +70,28 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }) {
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
+          phone: formData.phone || null, // API očekává phone pole
         }),
       });
       
       const data = await res.json();
+      console.log("Registration response:", data); // Debug log
+      
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Chyba při registraci");
+        // Lepší zpracování chyb z API
+        if (data.error && typeof data.error === 'object') {
+          // Zod validation errors
+          const errorMessages = Object.values(data.error.fieldErrors || {}).flat();
+          throw new Error(errorMessages.join(', ') || "Chyba při registraci");
+        } else if (data.error === 'Email is already registered') {
+          throw new Error("Email je již zaregistrovaný");
+        } else {
+          throw new Error(data.error || data.message || "Chyba při registraci");
+        }
       }
 
       // Po úspěšné registraci automaticky přihlásit
+      console.log("Registration successful, data:", data.data); // Debug log
       onRegister(data.data);
       
     } catch (e) {
@@ -97,6 +133,15 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }) {
         value={formData.email} 
         onChange={handleChange} 
         required 
+      />
+      
+      <input 
+        className="border px-2 py-1 rounded" 
+        type="tel" 
+        name="phone"
+        placeholder="Telefon (volitelné)" 
+        value={formData.phone} 
+        onChange={handleChange} 
       />
       
       <input 
