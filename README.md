@@ -37,3 +37,6 @@ Quickbook is designed is:
 - Database: PostgreSQL
 - Deployment: Azure
 
+## quickbook-borealis
+An appliaction for companies to manage reservation.
+>>>>>>> main
