@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
         passwordHash: hashedPassword,
         firstName,
         lastName,
-        phone,
         role: Role.CUSTOMER, // "customer" matches Prisma schema
       },
     });
@@ -56,7 +55,6 @@ export async function POST(request: NextRequest) {
       role: newUser.role as Role,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
-      phone: newUser.phone,
       createdAt: newUser.createdAt,
       updatedAt: newUser.updatedAt,
     });

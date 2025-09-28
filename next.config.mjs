@@ -1,4 +1,21 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  reactStrictMode: true,
+  distDir: 'build',
+  output: 'standalone',
+  env: {
+    AZURE_COMMUNICATION_CONNECTION_STRING: process.env.AZURE_COMMUNICATION_CONNECTION_STRING,
+    AZURE_COMMUNICATION_EMAIL_SENDER: process.env.AZURE_COMMUNICATION_EMAIL_SENDER,
+    AZURE_SQL_DATABASE: process.env.AZURE_SQL_DATABASE,
+    AZURE_SQL_PASSWORD: process.env.AZURE_SQL_PASSWORD,
+    AZURE_SQL_PORT: process.env.AZURE_SQL_PORT,
+    AZURE_SQL_SERVER: process.env.AZURE_SQL_SERVER,
+    AZURE_SQL_USER: process.env.AZURE_SQL_USER,
+    AZURE_STORAGE_ACCOUNT_KEY: process.env.AZURE_STORAGE_ACCOUNT_KEY,
+    AZURE_STORAGE_ACCOUNT_NAME: process.env.AZURE_STORAGE_ACCOUNT_NAME,
+    AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING,
+    AZURE_STORAGE_FILE_SHARE: process.env.AZURE_STORAGE_FILE_SHARE,
+  },
+};
 
 export default nextConfig;
