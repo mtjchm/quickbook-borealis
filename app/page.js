@@ -19,6 +19,7 @@ const COMPANY = {
 };
 
 export default function Home() {
+  // user will be the tokenResponse returned by /api/auth/login: { user: {...}, token: '...' }
   const [user, setUser] = useState(null);
   const [refresh, setRefresh] = useState(0);
 
@@ -46,7 +47,7 @@ export default function Home() {
         <div className="text-sm">E-mail: {COMPANY.email}</div>
       </div>
       <div className="self-end text-sm mb-4">
-        Přihlášen jako: <span className="font-semibold">{user.email}</span>{" "}
+        Přihlášen jako: <span className="font-semibold">{user?.user?.email ?? "unknown"}</span>
         <button className="ml-2 text-blue-600 underline" onClick={() => setUser(null)}>Odhlásit</button>
       </div>
       <BookingForm company={COMPANY} user={user} onBook={handleBook} />

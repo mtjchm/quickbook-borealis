@@ -1,5 +1,3 @@
-#  Quickbook – Reservation System for Businesses
-
 **Quickbook** is a web-based application designed to simplify reservation management for companies. Customers can easily submit their requests, and the system takes care of the rest. Businesses gain a clear and efficient interface to manage incoming reservations without the need for installation or technical setup.
 
 ##  Key Features
@@ -39,4 +37,3 @@ Quickbook is designed is:
 - Database: PostgreSQL
 - Deployment: Azure
 
----

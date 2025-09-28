@@ -17,16 +17,26 @@ export default function BookingForm({ company, user, onBook }) {
     setError("");
     try {
       // Odeslání rezervace na backend
+      // backend expects companyId, bookingDate, startTime, endTime in ISO
+      const startIso = new Date(`${date}T${startTime}`).toISOString();
+      // assume fixed duration 60 minutes for now
+      const endIso = new Date(new Date(`${date}T${startTime}`).getTime() + 60 * 60 * 1000).toISOString();
+
+      const body = {
+        companyId: company.id,
+        bookingDate: date,
+        startTime: startIso,
+        endTime: endIso,
+        notes: customerNotes || null,
+      };
+
+      const headers = { "Content-Type": "application/json" };
+      if (user?.token) headers['Authorization'] = `Bearer ${user.token}`;
+
       const res = await fetch("/api/bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_id: user.id,
-          company_id: company.id,
-          booking_date: date,
-          start_time: startTime,
-          customer_notes: customerNotes,
-        }),
+        headers,
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Chyba při vytváření rezervace");
