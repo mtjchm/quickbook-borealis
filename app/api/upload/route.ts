@@ -4,21 +4,9 @@ import { prisma } from '../../../lib/prisma/prisma';
 import { z } from 'zod';
 import { isCompanyAdmin } from '../../../lib/utils/utils';
 import { processImageBuffer, uploadBuffer } from '../../../lib/utils/utils';
+import { uploadImageSchema } from '../../../lib/prisma/schemas';
 
-
-// POST /api/upload for admin (upload banner/logo)
-const bodySchema = z.object({
-  companyId: z.preprocess((v) => {
-    if (typeof v === 'string' && v.length) return Number(v);
-    if (typeof v === 'number') return v;
-    return NaN;
-  }, z.number().int().positive()),
-  type: z.enum(['logo', 'banner']),
-
-  // base64 data URI or plain base64 for image encoding
-  imageBase64: z.string().min(100), // no way a png is shorter
-});
-
+// POST /api/upload for admin 
 export const POST = withAuth(async (request: NextRequest) => {
   let body: any;
   try {
@@ -27,7 +15,7 @@ export const POST = withAuth(async (request: NextRequest) => {
     return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const parsed = bodySchema.safeParse(body);
+  const parsed = uploadImageSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ success: false, error: 'Invalid input', details: z.treeifyError(parsed.error) }, { status: 400 });
   }

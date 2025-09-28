@@ -3,29 +3,7 @@ import { prisma } from '../../../../lib/prisma/prisma';
 import { withAuth } from '../../../../lib/auth/middleware';
 import { z } from 'zod';
 import { isCompanyAdmin } from '../../../../lib/utils/utils';
-
-// schema to extract id from path
-const idParamSchema = z.object({
-  id: z.preprocess((v) => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string' && v.length) return Number(v);
-    return NaN;
-  }, z.number().int().positive()),
-});
-
-// PATCH thats why all fields are optional
-const companyPatchSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().nullable().optional(),
-  address: z.string().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  email: z.string().email().nullable().optional(),
-  serviceName: z.string().nullable().optional(),
-  serviceDescription: z.string().nullable().optional(),
-  durationMinutes: z.number().int().positive().nullable().optional(),
-  price: z.union([z.string(), z.number()]).nullable().optional(),
-  isActive: z.boolean().optional(),
-});
+import { idParamSchema, patchCompanySchema } from '../../../../lib/prisma/schemas';
 
 // GET /api/companies/{id}
 // only company owner or global admin can read company details
@@ -67,10 +45,6 @@ export const GET = withAuth(async (request: NextRequest) => {
     phone: company.phone,
     email: company.email,
     serviceName: company.serviceName,
-    serviceDescription: company.serviceDescription,
-    durationMinutes: company.durationMinutes,
-    price: company.price ? String(company.price) : null,
-    isActive: company.isActive,
     owner: company.owner,
     createdAt: company.createdAt.toISOString(),
     updatedAt: company.updatedAt.toISOString(),
@@ -97,7 +71,7 @@ export const PATCH = withAuth(async (request: NextRequest) => {
     return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const bodyParsed = companyPatchSchema.safeParse(body);
+  const bodyParsed = patchCompanySchema.safeParse(body);
   if (!bodyParsed.success) {
     return NextResponse.json({ success: false, error: 'Invalid body', details: bodyParsed.error.format() }, { status: 400 });
   }
@@ -148,10 +122,6 @@ export const PATCH = withAuth(async (request: NextRequest) => {
       phone: updated.phone,
       email: updated.email,
       serviceName: updated.serviceName,
-      serviceDescription: updated.serviceDescription,
-      durationMinutes: updated.durationMinutes,
-      price: updated.price ? String(updated.price) : null,
-      isActive: updated.isActive,
       owner: updated.owner,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
