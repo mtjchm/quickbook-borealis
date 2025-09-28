@@ -36,6 +36,7 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          echo $DATABASE_URL
           npm install
           npx prisma generate --schema ./lib/prisma/schema.prisma
           npm run build
