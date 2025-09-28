@@ -6,14 +6,6 @@ import { isCompanyAdmin } from '../../../lib/utils/utils';
 import { processImageBuffer, uploadBuffer } from '../../../lib/utils/utils';
 
 
-// add uploaded URL to the company object for frontend use
-async function setCompanyHeaderImageUrl(companyId: number, url: string) {
-  await prisma.company.update({
-    where: { id: companyId },
-    data: { headerImageUrl: url },
-  });
-}
-
 // POST /api/upload for admin (upload banner/logo)
 const bodySchema = z.object({
   companyId: z.preprocess((v) => {
@@ -24,11 +16,10 @@ const bodySchema = z.object({
   type: z.enum(['logo', 'banner']),
 
   // base64 data URI or plain base64 for image encoding
-  imageBase64: z.string().min(100),
+  imageBase64: z.string().min(100), // no way a png is shorter
 });
 
 export const POST = withAuth(async (request: NextRequest) => {
-  // parse JSON 
   let body: any;
   try {
     body = await request.json();
@@ -38,7 +29,7 @@ export const POST = withAuth(async (request: NextRequest) => {
 
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ success: false, error: 'Invalid input', details: parsed.error.format() }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'Invalid input', details: z.treeifyError(parsed.error) }, { status: 400 });
   }
 
   const { companyId, type, imageBase64 } = parsed.data;
@@ -72,12 +63,15 @@ export const POST = withAuth(async (request: NextRequest) => {
     const blobName = `${companyId}_${type}.png`;
     const url = await uploadBuffer(blobName, processed, 'image/png');
 
-    //return public URL and filename
-    await setCompanyHeaderImageUrl(companyId, url);
+    // set company headerImageUrl
+    await prisma.company.update({
+      where: { id: companyId },
+      data: { headerImageUrl: url },
+    });
     return NextResponse.json({ success: true, data: { url, filename: blobName } });
 
   } catch (err: any) {
     console.error('Upload error:', err);
-    return NextResponse.json({ success: false, error: 'Upload failed', details: err?.message ?? null }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Upload failed', details: z.treeifyError(err)}, { status: 500 });
   }
 });
