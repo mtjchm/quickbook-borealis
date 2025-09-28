@@ -1,0 +1,7 @@
+{
+    "success": true,
+    "data": {
+        "url": "https://cdn.example.com/uploads/img-12345.jpg",
+        "filename": "img-12345.jpg"
+    }
+}

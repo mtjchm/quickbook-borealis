@@ -1,0 +1,74 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("customer") @map("role")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // company admin
+  ownedCompanies Company[] @relation("CompanyOwner")
+
+  // bookings where this user is the customer
+  bookings       Booking[] @relation("CustomerBooking")
+
+  // is employee of company
+  company   Company? @relation("employees", fields: [companyId], references: [id])
+  companyId Int?     @map("company_id")
+
+  @@map("users")
+}
+
+model Company {
+  id               Int      @id @default(autoincrement())
+  name             String
+  description      String?
+  headerImageUrl   String?  @map("header_image_url")
+  ownerId          Int      @map("owner_id")
+  owner            User     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  address          String?
+  phone            String?
+  email            String?
+  businessHours    String?    @map("business_hours") // will be json string
+  serviceName      String?  @map("service_name")
+
+  // employees for this company
+  employees User[]  @relation("employees")
+  Bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("companies")
+}
+
+model Booking {
+  id            Int      @id @default(autoincrement())
+  customerId    Int      @map("customer_id")
+  customer      User     @relation("CustomerBooking", fields: [customerId], references: [id])
+  companyId     Int      @map("company_id")
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bookingDate   DateTime @map("booking_date")
+  startTime     DateTime @map("start_time")
+  endTime       DateTime @map("end_time")
+  status        String   @map("status") // pending, confirmed, cancelled, completed
+  notes         String?
+  totalPrice    Decimal? @map("total_price") @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("bookings")
+}
