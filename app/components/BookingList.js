@@ -8,9 +8,16 @@ export default function BookingList({ user, company, refresh }) {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const res = await fetch(`/api/bookings?customer_id=${user.id}&company_id=${company.id}`);
+      const params = new URLSearchParams({ companyId: String(company.id) });
+      const headers = {};
+      if (user?.token) headers['Authorization'] = `Bearer ${user.token}`;
+
+      const res = await fetch(`/api/bookings?${params.toString()}`, { headers });
       const data = await res.json();
-      setBookings(data.data || []);
+      // API returns an array of { startTime, endTime } for booked slots when called without auth
+      // When authenticated for customer bookings we get BookingResponse objects; handle both.
+      const out = Array.isArray(data.data) ? data.data : (data.data || []);
+      setBookings(out || []);
       setLoading(false);
     }
     if (user && company) load();
@@ -34,16 +41,25 @@ export default function BookingList({ user, company, refresh }) {
           </tr>
         </thead>
         <tbody>
-          {bookings.map((b, i) => (
-            <tr key={i} className="hover:bg-gray-50">
-              <td className="p-2">{b.booking_date}</td>
-              <td className="p-2">{b.start_time}</td>
-              <td className="p-2">{b.customer_notes}</td>
-              <td className="p-2">{b.status}</td>
-              <td className="p-2">{b.company?.service?.name}</td>
-              <td className="p-2">{b.company?.service?.price} Kč</td>
-            </tr>
-          ))}
+          {bookings.map((b, i) => {
+            // handle booked slot shape { startTime, endTime } or full booking object
+            const bookingDate = b.booking_date ?? (b.startTime ? new Date(b.startTime).toISOString().slice(0,10) : '');
+            const start = b.start_time ?? b.startTime ?? '';
+            const notes = b.notes ?? b.customer_notes ?? '';
+            const status = b.status ?? '';
+            const serviceName = b.company?.service?.name ?? b.company?.name ?? '';
+            const price = b.company?.service?.price ?? '';
+            return (
+              <tr key={i} className="hover:bg-gray-50">
+                <td className="p-2">{bookingDate}</td>
+                <td className="p-2">{start}</td>
+                <td className="p-2">{notes}</td>
+                <td className="p-2">{status}</td>
+                <td className="p-2">{serviceName}</td>
+                <td className="p-2">{price ? `${price} Kč` : ''}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

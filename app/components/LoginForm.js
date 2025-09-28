@@ -22,7 +22,7 @@ export default function LoginForm({ onLogin }) {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Chybné přihlašovací údaje");
 
-      // Backend by měl vracet uživatele (např. id, email, jméno)
+      // Backend returns { user: { ... }, token }
       onLogin(data.data);
     } catch (e) {
       setError(e.message || "Chyba při přihlášení");
