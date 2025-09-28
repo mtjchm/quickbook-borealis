@@ -53,4 +53,4 @@ export default function Home() {
       <BookingList user={user} company={COMPANY} refresh={refresh} />
     </main>
   );
-}jgh 
+}
