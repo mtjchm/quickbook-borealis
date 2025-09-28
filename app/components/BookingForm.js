@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -106,3 +107,4 @@ export default function BookingForm({ company, user, onBook }) {
     </form>
   );
 }
+
