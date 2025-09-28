@@ -1,0 +1,178 @@
+{
+    "GET /api/bookings?id={companyId} (public - booked slots)": {
+        "success": true,
+        "data": [
+            {
+                "startTime": "2025-09-30T09:00:00.000Z",
+                "endTime": "2025-09-30T10:00:00.000Z"
+            },
+            {
+                "startTime": "2025-10-01T11:00:00.000Z",
+                "endTime": "2025-10-01T12:00:00.000Z"
+            }
+        ],
+        "meta": {
+            "companyId": 1,
+            "viewer": null
+        }
+    },
+    "GET /api/bookings?id={companyId} (provider/admin - full bookings)": {
+        "success": true,
+        "data": [
+            {
+                "id": 101,
+                "customerId": 11,
+                "customer": {
+                    "id": 11,
+                    "firstName": "Alice",
+                    "lastName": "Smith",
+                    "email": "alice@example.com",
+                    "phone": "123-456-7890"
+                },
+                "companyId": 1,
+                "company": {
+                    "id": 1,
+                    "name": "Fresh Cuts Salon"
+                },
+                "bookingDate": "2025-09-30T00:00:00.000Z",
+                "startTime": "2025-09-30T09:00:00.000Z",
+                "endTime": "2025-09-30T10:00:00.000Z",
+                "status": "confirmed",
+                "customerNotes": "Please use organic shampoo.",
+                "providerNotes": "Prefers window seat.",
+                "totalPrice": "65.00",
+                "emailSent": true,
+                "createdAt": "2025-09-01T12:00:00.000Z",
+                "updatedAt": "2025-09-02T12:00:00.000Z"
+            }
+        ],
+        "meta": {
+            "companyId": 1,
+            "viewer": {
+                "role": "provider"
+            }
+        }
+    },
+    "GET /api/bookings/{id}": {
+        "success": true,
+        "data": {
+            "id": 101,
+            "customerId": 11,
+            "customer": {
+                "id": 11,
+                "firstName": "Alice",
+                "lastName": "Smith",
+                "email": "alice@example.com",
+                "phone": "123-456-7890"
+            },
+            "companyId": 1,
+            "company": {
+                "id": 1,
+                "name": "Fresh Cuts Salon"
+            },
+            "bookingDate": "2025-09-30T00:00:00.000Z",
+            "startTime": "2025-09-30T09:00:00.000Z",
+            "endTime": "2025-09-30T10:00:00.000Z",
+            "status": "confirmed",
+            "customerNotes": "Please use organic shampoo.",
+            "providerNotes": "Prefers window seat.",
+            "totalPrice": "65.00",
+            "emailSent": true,
+            "createdAt": "2025-09-01T12:00:00.000Z",
+            "updatedAt": "2025-09-02T12:00:00.000Z"
+        }
+    },
+    "DELETE /api/bookings/{id}": {
+        "success": true,
+        "data": {
+            "id": 101
+        }
+    },
+    "GET /api/companies/{id}": {
+        "success": true,
+        "data": {
+            "id": 1,
+            "name": "Fresh Cuts Salon",
+            "description": "Modern salon for stylish haircuts.",
+            "address": "123 Main St",
+            "phone": "555-1234",
+            "email": "contact@freshcuts.com",
+            "serviceName": "Haircut & Style",
+            "serviceDescription": "Professional haircut with wash and styling",
+            "durationMinutes": 60,
+            "price": "65.00",
+            "isActive": true,
+            "owner": {
+                "id": 21,
+                "email": "bob@example.com",
+                "firstName": "Bob",
+                "lastName": "Johnson"
+            },
+            "createdAt": "2025-08-01T10:00:00.000Z",
+            "updatedAt": "2025-09-01T10:00:00.000Z"
+        }
+    },
+    "PATCH /api/companies/{id}": {
+        "success": true,
+        "data": {
+            "id": 1,
+            "name": "Fresh Cuts Salon",
+            "description": "Updated description text",
+            "address": "123 Main St",
+            "phone": "555-1234",
+            "email": "contact@freshcuts.com",
+            "serviceName": "Haircut & Style",
+            "serviceDescription": "Professional haircut with wash and styling",
+            "durationMinutes": 60,
+            "price": "70.00",
+            "isActive": true,
+            "owner": {
+                "id": 21,
+                "email": "bob@example.com",
+                "firstName": "Bob",
+                "lastName": "Johnson"
+            },
+            "createdAt": "2025-08-01T10:00:00.000Z",
+            "updatedAt": "2025-09-10T11:00:00.000Z"
+        }
+    },
+    "DELETE /api/companies/{id}": {
+        "success": true,
+        "data": {
+            "id": 1
+        }
+    },
+    "POST /api/auth/register or POST /api/auth/login": {
+        "user": {
+            "id": 11,
+            "email": "alice@example.com",
+            "role": "customer",
+            "first_name": "Alice",
+            "last_name": "Smith",
+            "phone": "123-456-7890",
+            "created_at": "2025-08-01T09:00:00.000Z",
+            "updated_at": "2025-09-01T09:00:00.000Z"
+        },
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.exampletoken"
+    },
+    "GET /api/auth/me": {
+        "success": true,
+        "data": {
+            "id": 11,
+            "email": "alice@example.com",
+            "role": "customer",
+            "first_name": "Alice",
+            "last_name": "Smith",
+            "phone": "123-456-7890",
+            "created_at": "2025-08-01T09:00:00.000Z",
+            "updated_at": "2025-09-01T09:00:00.000Z"
+        }
+    },
+    "POST /api/upload": {
+        "success": true,
+        "data": {
+            "url": "https://cdn.example.com/uploads/img-12345.jpg",
+            "filename": "img-12345.jpg"
+        }
+    }
+}

@@ -1,2 +1,3 @@
 # quickbook-borealis
-An appliaction for small companies to manage reservation.
+An application for small companies to manage reservation.
+
