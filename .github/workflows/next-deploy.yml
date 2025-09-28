@@ -35,7 +35,6 @@ jobs:
 
       - name: npm install, build, and test
         run: |
-          echo "$AZURE_SQL_USER this is the azure sql user."
           npm install
           npx prisma generate --schema ./lib/prisma/schema.prisma
           npm run build
