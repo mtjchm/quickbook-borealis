@@ -57,3 +57,11 @@ export const uploadImageSchema = z.object({
   // base64 data URI or plain base64 for image encoding
   imageBase64: z.string().min(100), // no way a png is shorter
 });
+
+export const registerSchema = z.object({
+  email: z.email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  phone: z.string().optional().nullable(),
+});
