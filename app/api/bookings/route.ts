@@ -62,23 +62,23 @@ export async function GET(request: NextRequest) {
         orderBy: { startTime: 'asc' },
       });
 
-      const out = fullBookings.map((b) => ({
-        id: b.id,
-        customerId: b.customerId,
-        customer: b.customer,
-        companyId: b.companyId,
-        company: b.company,
-        bookingDate: b.bookingDate.toISOString(),
-        startTime: b.startTime.toISOString(),
-        endTime: b.endTime.toISOString(),
-        status: b.status,
-        customerNotes: b.customerNotes,
-        providerNotes: b.providerNotes,
-        totalPrice: b.totalPrice ? String(b.totalPrice) : null,
-        emailSent: b.emailSent,
-        createdAt: b.createdAt.toISOString(),
-        updatedAt: b.updatedAt.toISOString(),
-      }));
+const out = fullBookings.map((b: any) => ({
+  id: b.id,
+  customerId: b.customerId,
+  customer: b.customer,
+  companyId: b.companyId,
+  company: b.company,
+  bookingDate: b.bookingDate.toISOString(),
+  startTime: b.startTime.toISOString(),
+  endTime: b.endTime.toISOString(),
+  status: b.status,
+  customerNotes: b.customerNotes,
+  providerNotes: b.providerNotes,
+  totalPrice: b.totalPrice ? String(b.totalPrice) : null,
+  emailSent: b.emailSent,
+  createdAt: b.createdAt.toISOString(),
+  updatedAt: b.updatedAt.toISOString(),
+}));
 
       return NextResponse.json({ success: true, data: out, meta: { companyId, viewer: { role: viewer.role } } });
     }
