@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
       role: user.role as Role,
       firstName: user.firstName,
       lastName: user.lastName,
-      phone: user.phone,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });
