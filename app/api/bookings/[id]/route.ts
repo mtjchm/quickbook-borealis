@@ -5,14 +5,9 @@ import { extractTokenFromHeader, verifyToken } from '../../../../lib/auth/jwt';
 import { Role } from '../../../../lib/types';
 import { withRole, withAuth } from '../../../../lib/auth/middleware'; // added withAuth
 import { idParamSchema, patchBookingSchema } from '../../../../lib/prisma/schemas';
+import { BookingResponse, BookedSlot } from '../../../../lib/types';
 
-/**
- * GET /api/bookings/{id}
- * - If the requester is authenticated AND is the booking owner OR provider/admin:
- *     return the booking details AND an array of booked time slots for the booking's company.
- * - If the requester is unauthenticated OR not authorized to view the booking:
- *     return array of booked time slots for the booking's company.
- */
+// GET /api/bookings/{id}
 export async function GET(request: NextRequest) {
   const rawId = request.nextUrl.pathname.split('/').pop();
   const parsed = idParamSchema.safeParse({ id: rawId });
@@ -55,29 +50,32 @@ export async function GET(request: NextRequest) {
     take: 500,
   });
 
-  const slots = booked.map((b: any) => ({
+  const slots: BookedSlot[] = booked.map((b: any) => ({
     startTime: b.startTime.toISOString(),
     endTime: b.endTime.toISOString(),
   }));
 
+  // Determine if requester may see full booking details:
   const canSeeBooking =
     !!viewer &&
     (viewer.userId === booking.customerId || viewer.role === Role.PROVIDER || viewer.role === Role.ADMIN);
 
   if (canSeeBooking) {
     // Return booking details + booked slots array
-    const outBooking = {
+    const outBooking: BookingResponse = {
       id: booking.id,
-      customerId: booking.customerId,
-      companyId: booking.companyId,
-      bookingDate: booking.bookingDate?.toISOString?.() ?? null,
-      startTime: booking.startTime?.toISOString?.() ?? null,
-      endTime: booking.endTime?.toISOString?.() ?? null,
+      customer_id: booking.customerId,
+      company_id: booking.companyId,
+      booking_date: booking.bookingDate?.toISOString?.() ?? null,
+      start_time: booking.startTime?.toISOString?.() ?? null,
+      end_time: booking.endTime?.toISOString?.() ?? null,
       status: booking.status,
-      totalPrice: booking.totalPrice ? String(booking.totalPrice) : null,
-      createdAt: booking.createdAt?.toISOString?.() ?? null,
-      updatedAt: booking.updatedAt?.toISOString?.() ?? null,
-      company: booking.company,
+      notes: booking.notes ?? null,
+      total_price: booking.totalPrice ? String(booking.totalPrice) : null,
+      created_at: booking.createdAt?.toISOString?.() ?? null,
+      updated_at: booking.updatedAt?.toISOString?.() ?? null,
+      customer: null, // full customer fields can be included if requested; kept null here for brevity
+      company: booking.company ?? null,
     };
 
     return NextResponse.json({ success: true, data: { booking: outBooking, bookedSlots: slots } });
@@ -109,18 +107,7 @@ export const DELETE = withRole(['PROVIDER', 'ADMIN'], async (request: NextReques
   }
 });
 
-/**
- * PATCH /api/bookings/{id}
- * - Only accessible to authenticated users who are:
- *   - ADMIN (global), or
- *   - PROVIDER and are an employee of the booking's company.
- * - Returns 403 with body { success: false, error: 'forbidden' } for unauthorized callers.
- *
- * Notes:
- * - We keep the allowed update fields small for MVP.
- * - Uses zod to validate the patch payload.
- */
-
+// PATCH /api/bookings/{id}; provider or admin
 export const PATCH = withAuth(async (request: any) => {
   // extract and validate id from path
   const rawId = request.nextUrl.pathname.split('/').pop();

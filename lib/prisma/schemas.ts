@@ -17,6 +17,22 @@ export const patchBookingSchema = z.object({
   totalPrice: z.union([z.string(), z.number()]).nullable().optional(),
 });
 
+export const postBookingSchema = z.object({
+  customerId: z.number().int().positive().optional().nullable(),
+  companyId: z.number().int().positive(),
+  bookingDate: z
+    .string()
+    .refine((v) => !Number.isNaN(Date.parse(v)), { message: 'bookingDate must be a valid ISO date string' }),
+  startTime: z
+    .string()
+    .refine((v) => !Number.isNaN(Date.parse(v)), { message: 'startTime must be a valid ISO datetime string' }),
+  endTime: z
+    .string()
+    .refine((v) => !Number.isNaN(Date.parse(v)), { message: 'endTime must be a valid ISO datetime string' }),
+  notes: z.string().optional().nullable(),
+  totalPrice: z.union([z.string(), z.number()]).optional().nullable(),
+});
+
 export const patchCompanySchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
