@@ -15,19 +15,19 @@ export async function authenticateToken(request: NextRequest): Promise<JWTPayloa
   try {
     // Get Authorization header from request
     const authHeader = request.headers.get('Authorization');
-    
+
     if (!authHeader) {
       throw new Error('No authorization header provided');
     }
-    
+
     // Extract token
     const token = extractTokenFromHeader(authHeader);
     if (!token) {
       throw new Error('Invalid authorization header format');
     }
-    
+
     const payload = verifyToken(token); // Verify; get user payload
-    
+
     return payload;
   } catch (error) { // more error handling yay
     throw new Error(`${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -53,11 +53,11 @@ export function withAuth<T extends any[]>(
     try {
       // Authenticate the request
       const user = await authenticateToken(request);
-      
+
       // Create an authenticated request object with user information
       const authenticatedRequest = request as AuthenticatedRequest;
       authenticatedRequest.user = user;
-      
+
       // Call the original handler with authenticated request
       return await handler(authenticatedRequest, ...args);
     } catch (error) {
@@ -66,7 +66,7 @@ export function withAuth<T extends any[]>(
         {
           success: false,
           error: {
-            code: 'UNAUTHORIZED',
+            code: 'UNAUTHORIZED in middleware',
             message: error instanceof Error ? error.message : 'Authentication failed'
           }
         },
@@ -98,7 +98,7 @@ export function withRole<T extends any[]>(
         { status: 403 }
       );
     }
-    
+
     // User has required role => proceed
     return await handler(request, ...args);
   });

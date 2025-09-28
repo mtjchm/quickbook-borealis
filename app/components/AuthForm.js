@@ -4,33 +4,36 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 
 export default function AuthForm({ onLogin }) {
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [showLogin, setShowLogin] = useState(true);
 
-  function handleRegister(userData) {
-    // Po úspěšné registraci automaticky přihlásit uživatele
+  const handleLogin = (userData) => {
+    localStorage.setItem('user', JSON.stringify(userData));
     onLogin(userData);
+  };
+
+  if (showLogin) {
+    return (
+      <>
+        <LoginForm onLogin={handleLogin} />
+        <p className="text-sm">
+          Nemáte účet?{" "}
+          <button className="text-blue-600 underline" onClick={() => setShowLogin(false)}>
+            Zaregistrujte se
+          </button>
+        </p>
+      </>
+    );
   }
 
   return (
-    <div className="flex flex-col items-center">
-      {isLoginMode ? (
-        <div>
-          <LoginForm onLogin={onLogin} />
-          <div className="text-center mt-4">
-            <button 
-              onClick={() => setIsLoginMode(false)}
-              className="text-blue-600 hover:text-blue-800 text-sm"
-            >
-              Nemáte účet? Zaregistrujte se
-            </button>
-          </div>
-        </div>
-      ) : (
-        <RegisterForm 
-          onRegister={handleRegister}
-          onSwitchToLogin={() => setIsLoginMode(true)}
-        />
-      )}
-    </div>
+    <>
+      <RegisterForm onRegister={handleLogin} onSwitchToLogin={() => setShowLogin(true)} />
+      <p className="text-sm">
+        Máte již účet?{" "}
+        <button className="text-blue-600 underline" onClick={() => setShowLogin(true)}>
+          Přihlaste se
+        </button>
+      </p>
+    </>
   );
 }

@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma/prisma';
 import { withAuth } from '../../../../lib/auth/middleware';
 import { z } from 'zod';
-import { isCompanyAdmin } from '../../../../lib/utils/utils';
 import { idParamSchema, patchCompanySchema } from '../../../../lib/prisma/schemas';
+import { isCompanyAdmin } from '../../../../lib/utils/utils';
 
 // GET /api/companies/{id}
-// only company owner or global admin can read company details
-export const GET = withAuth(async (request: NextRequest) => {
+// any user can read company details
+export const GET = async (request: NextRequest) => {
   // extract id from path and validate
   const rawId = request.nextUrl.pathname.split('/').pop();
   const parsed = idParamSchema.safeParse({ id: rawId });
@@ -20,38 +20,27 @@ export const GET = withAuth(async (request: NextRequest) => {
   // fetch company
   const company = await prisma.company.findUnique({
     where: { id },
-    include: {
-      owner: {
-        select: { id: true, email: true, firstName: true, lastName: true },
-      },
-    },
   });
 
   if (!company) {
     return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   }
 
-  // only owner or global admin (lib/utils/utils.ts)
-  const user = (request as any).user;
-  if (!isCompanyAdmin(user, company.ownerId)) {
-    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
-  }
-
   const out = {
     id: company.id,
     name: company.name,
     description: company.description,
+    headerImageUrl: company.headerImageUrl,
     address: company.address,
     phone: company.phone,
     email: company.email,
     serviceName: company.serviceName,
-    owner: company.owner,
     createdAt: company.createdAt.toISOString(),
     updatedAt: company.updatedAt.toISOString(),
   };
 
   return NextResponse.json({ success: true, data: out });
-});
+};
 // PATCH /api/companies/{id}
 // only company owner or global admin may update
 export const PATCH = withAuth(async (request: NextRequest) => {
