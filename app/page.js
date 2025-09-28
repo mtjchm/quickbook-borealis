@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import LoginForm from "./components/LoginForm";
+import AuthForm from "./components/AuthForm";
 import BookingForm from "./components/BookingForm";
 import BookingList from "./components/BookingList";
 
@@ -30,7 +30,7 @@ export default function Home() {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen gap-2 bg-gray-100 py-8">
         <h1 className="text-3xl font-bold mb-4">{COMPANY.name} – Rezervační systém</h1>
-        <LoginForm onLogin={setUser} />
+        <AuthForm onLogin={setUser} />
       </main>
     );
   }
