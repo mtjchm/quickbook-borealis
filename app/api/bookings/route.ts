@@ -3,14 +3,9 @@ import { prisma } from '../../../lib/prisma/prisma';
 import { z } from 'zod';
 import { extractTokenFromHeader, verifyToken } from '../../../lib/auth/jwt';
 import { Role } from '../../../lib/types';
-import { errorToJSON } from 'next/dist/server/render';
 
-//GET /api/bookings
-//Public endpoint - returns only "booked out" time slots for a company for unauthenticated users
-export async function GET(request: NextRequest) {
-  
-  // schema to extract id from path
-  const querySchema = z.object({
+
+const idParamSchema = z.object({
     companyId: z.preprocess((v) => {
     if (typeof v === 'number') return v;
         if (typeof v === 'string' && v.length) return Number(v);
@@ -18,18 +13,17 @@ export async function GET(request: NextRequest) {
     }, z.number().int().positive()),
   });
 
+  
+//GET /api/bookings
+//Public endpoint - returns only "booked out" time slots for a company for unauthenticated users
+export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const raw = {
     companyId: url.searchParams.get('id')
   };
 
-  const parsed = querySchema.safeParse(raw);
-  if (!parsed.success) {
-    // return validation details to help the frontend debug
-    return NextResponse.json({ success: false, error: 'Invalid query', details: parsed.error.format() }, { status: 400 });
-  }
-
-  const { companyId } = parsed.data;
+  const parsed = idParamSchema.safeParse(raw);
+  const { companyId } = parsed.data || {};
 
   // Try to decode token if provided in the header
   let viewer: { userId: number; email: string; role: Role } | null = null;
@@ -49,7 +43,7 @@ export async function GET(request: NextRequest) {
 
 
   try {
-    // If the viewer is a provider or admin, return full booking records.
+    // If the viewer is logged in and provider or admin, return full booking records.
     if (viewer && (viewer.role === Role.PROVIDER || viewer.role === Role.ADMIN)) {
       const fullBookings = await prisma.booking.findMany({
         where,
@@ -89,7 +83,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: out, meta: { companyId, viewer: { role: viewer.role } } });
     }
 
-    // Otherwise return only booked time slots (public view)
+    // else return only booked time slots (public view)
     const bookings = await prisma.booking.findMany({
       where,
       select: {
@@ -99,12 +93,7 @@ export async function GET(request: NextRequest) {
       orderBy: { startTime: 'asc' },
     });
 
-    const slots = bookings.map((b) => ({
-      startTime: b.startTime.toISOString(),
-      endTime: b.endTime.toISOString(),
-    }));
-
-    return NextResponse.json({ success: true, data: slots, meta: { companyId, viewer: viewer ? { role: viewer.role } : null } });
+    return NextResponse.json({ success: true, data: bookings, meta: { companyId, viewer: viewer ? { role: viewer.role } : null } });
   } catch (err) {
     return NextResponse.json({ success: false, error: 'Database query failed' }, { status: 500 });
   }
