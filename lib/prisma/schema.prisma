@@ -12,7 +12,6 @@ datasource db {
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
-  phone        String?
   passwordHash String   @map("password_hash")
   role         String   @default("customer") @map("role")
   firstName    String   @map("first_name")
@@ -20,14 +19,14 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // company ownership (ownerId on Company)
+  // company admin
   ownedCompanies Company[] @relation("CompanyOwner")
 
   // bookings where this user is the customer
   bookings       Booking[] @relation("CustomerBooking")
 
-  // provider -> belongs to a company (nullable)
-  company   Company? @relation("CompanyProviders", fields: [companyId], references: [id])
+  // is employee of company
+  company   Company? @relation("employees", fields: [companyId], references: [id])
   companyId Int?     @map("company_id")
 
   @@map("users")
@@ -45,13 +44,9 @@ model Company {
   email            String?
   businessHours    String?    @map("business_hours") // will be json string
   serviceName      String?  @map("service_name")
-  serviceDescription String? @map("service_description")
-  durationMinutes  Int?     @map("duration_minutes")
-  price            Decimal? @db.Decimal(10, 2)
-  isActive         Boolean  @map("is_active") @default(true)
 
-  // providers/employees for this company
-  providers User[]  @relation("CompanyProviders")
+  // employees for this company
+  employees User[]  @relation("employees")
   Bookings Booking[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -69,11 +64,9 @@ model Booking {
   bookingDate   DateTime @map("booking_date")
   startTime     DateTime @map("start_time")
   endTime       DateTime @map("end_time")
-  status        String   @map("status")
-  customerNotes String?  @map("customer_notes")
-  providerNotes String?  @map("provider_notes")
+  status        String   @map("status") // pending, confirmed, cancelled, completed
+  notes         String?
   totalPrice    Decimal? @map("total_price") @db.Decimal(10, 2)
-  emailSent     Boolean  @map("email_sent") @default(false)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
