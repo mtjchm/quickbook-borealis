@@ -20,6 +20,7 @@ env:
   AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME_SEC }}
   AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING_SEC }}
   AZURE_STORAGE_FILE_SHARE: ${{ secrets.AZURE_STORAGE_FILE_SHARE_SEC }}
+  DATABASE_URL: "sqlserver://${{ secrets.AZURE_SQL_SERVER_SEC }}[:${{ secrets.AZURE_SQL_PORT_SEC }}];database=${{ secrets.AZURE_SQL_DATABASE_SEC }};user={${{ secrets.AZURE_SQL_USER_SEC }}};password={${{ secrets.AZURE_SQL_PASSWORD_SEC }}};encrypt=true"
 
 jobs:
   build:
