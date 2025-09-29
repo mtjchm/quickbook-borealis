@@ -17,7 +17,7 @@ export function signToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
 
     // jwt.sign() automatically adds 'iat' (issued at) and 'exp' (expires at) fields
     const token = jwt.sign(
-      payload,          
+      payload,
       JWT_SECRET
     );
     return token;
@@ -30,7 +30,7 @@ export function signToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
 export function verifyToken(token: string): JWTPayload {
   try { // Remove 'Bearer ' prefix since that can sometimes be included in the token string
     const cleanToken = token.replace(/^Bearer\s+/i, '');
-    
+
     const decoded = jwt.verify(cleanToken, JWT_SECRET) as unknown as JWTPayload;
     return decoded;
 
@@ -53,11 +53,11 @@ export function extractTokenFromHeader(authHeader: string | null): string | null
   }
   // Assumed to be "Bearer <token>"
   const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
-    return null;
+  if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
+    return parts[1];
   }
-  
-  return parts[1];
+
+  return null;
 }
 
 export function createTokenResponse(user: { // create token response object with user info 
@@ -76,7 +76,7 @@ export function createTokenResponse(user: { // create token response object with
     email: user.email,
     role: user.role
   });
-  
+
   return {
     user: {
       id: user.id,

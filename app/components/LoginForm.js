@@ -17,12 +17,12 @@ export default function LoginForm({ onLogin }) {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Chybné přihlašovací údaje");
 
-      // Backend returns { user: { ... }, token }
       onLogin(data.data);
     } catch (e) {
       setError(e.message || "Chyba při přihlášení");

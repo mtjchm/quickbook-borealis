@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '../../../lib/prisma/prisma';
 import { withAuth } from '../../../lib/auth/middleware';
+import { extractTokenFromHeader, verifyToken } from '../../../lib/auth/jwt';
 import { postBookingSchema } from '../../../lib/prisma/schemas';
 import { sendBookingEmail } from '../../../lib/email/client'; // implemented later
 import { Role, BookingResponse, User, CompanyPublic, BookingData } from '../../../lib/types';
@@ -21,12 +22,9 @@ export const POST = withAuth(async (request: any) => {
   }
   const body = parsed.data;
 
-  // Determine customerId: only allow provider/admin to set arbitrary customerId
+  // customerId is from the authenticated user
   const caller = request.user as { userId: number; role: Role };
-  let customerId = caller.userId;
-  if (body.customerId && (caller.role === Role.PROVIDER || caller.role === Role.ADMIN)) {
-    customerId = body.customerId;
-  }
+  const customerId = caller.userId;
 
   // Ensure company exists
   const company = await prisma.company.findUnique({ where: { id: body.companyId } });
@@ -104,7 +102,7 @@ const companyIdQuery = z.object({
   }, z.number().int().positive()),
 });
 
-export const GET = withAuth(async (request: any) => {
+export const GET = async (request: any) => {
   const url = new URL(request.url);
   const parsed = companyIdQuery.safeParse({ companyId: url.searchParams.get('companyId') });
   if (!parsed.success) {
@@ -112,22 +110,72 @@ export const GET = withAuth(async (request: any) => {
   }
   const { companyId } = parsed.data;
 
+  // try to get a token from cookie or header; if present, verify to determine viewer role
+  let viewer: { userId: number; email: string; role: Role } | null = null;
   try {
-    const bookings = await prisma.booking.findMany({
+    const tokenFromCookie = request.cookies?.get?.('token')?.value;
+    const authHeader = request.headers.get('authorization');
+    const tokenFromHeader = extractTokenFromHeader(authHeader);
+    const token = tokenFromCookie || tokenFromHeader;
+    if (token) {
+      const payload = verifyToken(token);
+      viewer = { userId: payload.userId, email: payload.email, role: payload.role as Role };
+    }
+  } catch (e) {
+    viewer = null;
+  }
+
+  try {
+    if (viewer && (viewer.role === Role.EMPLOYEE || viewer.role === Role.ADMIN)) {
+      // provider/admin: return full booking details for management
+      const bookings = await prisma.booking.findMany({
+        where: { companyId },
+        include: {
+          customer: { select: { id: true, firstName: true, lastName: true, email: true } },
+          company: { select: { id: true, name: true } },
+        },
+        orderBy: { startTime: 'asc' },
+        take: 500,
+      });
+
+      const out = bookings.map((b: any) => ({
+        id: b.id,
+        customer_id: b.customerId,
+        company_id: b.companyId,
+        booking_date: b.bookingDate?.toISOString() ?? null,
+        start_time: b.startTime?.toISOString() ?? null,
+        end_time: b.endTime?.toISOString() ?? null,
+        status: b.status,
+        notes: b.notes ?? null,
+        total_price: b.totalPrice ? String(b.totalPrice) : null,
+        created_at: b.createdAt?.toISOString() ?? null,
+        updated_at: b.updatedAt?.toISOString() ?? null,
+        customer: b.customer
+          ? {
+            id: b.customer.id,
+            first_name: b.customer.firstName,
+            last_name: b.customer.lastName,
+            email: b.customer.email,
+          }
+          : null,
+        company: b.company ? { id: b.company.id, name: b.company.name } : null,
+      }));
+
+      return NextResponse.json({ success: true, data: out, meta: { companyId } });
+    }
+
+    // public: return booked slots (start/end) only
+    const slots = await prisma.booking.findMany({
       where: { companyId },
       select: { startTime: true, endTime: true },
       orderBy: { startTime: 'asc' },
       take: 500,
     });
 
-    const dates = bookings.map((b: any) => ({
-      startTime: b.startTime.toISOString(),
-      endTime: b.endTime.toISOString(),
-    }));
-
+    const dates = slots.map((b: any) => ({ startTime: b.startTime.toISOString(), endTime: b.endTime.toISOString() }));
     return NextResponse.json({ success: true, data: dates, meta: { companyId } });
   } catch (err) {
     console.error('GET bookings failed', err);
     return NextResponse.json({ success: false, error: 'Database query failed' }, { status: 500 });
   }
-});
+};
