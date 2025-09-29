@@ -1,45 +1,63 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import BookingForm from '../../components/BookingForm';
+import AdminDashboard from '../../components/AdminDashboard';
 
 const CompanyPage = ({ params }) => {
-  const rawid = React.use(params);
+  const rawId = use(params);
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null); // In a real app, you'd get this from a global state/context
+  const [user, setUser] = useState(null);
+  const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
-    const storedUserString = localStorage.getItem('user');
-    const loggedInUser = storedUserString ? JSON.parse(storedUserString) : null;
-    setUser(loggedInUser);
-
-    const fetchCompany = async () => {
+    async function fetchInitialData() {
+      setLoading(true);
       try {
-        const headers = {};
-        if (loggedInUser?.token) {
-          headers['Authorization'] = `Bearer ${loggedInUser.token}`;
+        // Fetch user session (include credentials so HttpOnly cookie is sent)
+        const userRes = await fetch('/api/auth/me', { credentials: 'include' });
+        let loggedInUser = null;
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          if (userData.success) {
+            loggedInUser = userData.data.user;
+            setUser(loggedInUser);
+          }
         }
 
-        const response = await fetch(`/api/companies/${rawid.id}`, { headers });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch company data');
+        // Fetch company data
+        const companyRes = await fetch(`/api/companies/${params.id}`);
+        if (!companyRes.ok) {
+          const errorData = await companyRes.json();
+          throw new Error(errorData.error?.message || 'Failed to fetch company data');
         }
-        
-        const data = await response.json();
-        setCompany(data.data);
+        const companyData = await companyRes.json();
+        setCompany(companyData.data);
+
+        // Fetch employees for the company (public info)
+        try {
+          const empRes = await fetch(`/api/companies/${params.id}/employees`);
+          if (empRes.ok) {
+            const empData = await empRes.json();
+            if (empData.success) setEmployees(empData.data.employees || []);
+          }
+        } catch (e) {
+          // don't block page if employees fail to load
+          console.error('Failed to fetch employees', e);
+        }
+
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchCompany();
-  }, [rawid.id]);
+    fetchInitialData();
+  }, rawId.id);
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -53,6 +71,8 @@ const CompanyPage = ({ params }) => {
     return <div>Company not found</div>;
   }
 
+  // Roles are stored as lowercase strings (see lib/types). Normalize/case-check accordingly.
+  const isProviderOrAdmin = user && (user.role === 'provider' || user.role === 'admin');
   return (
     <main className="flex flex-col items-center min-h-screen bg-gray-100 py-8">
       <div className="w-full max-w-4xl px-4">
@@ -70,9 +90,26 @@ const CompanyPage = ({ params }) => {
             <p><strong>Email:</strong> {company.email}</p>
           </div>
         </div>
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h2 className="text-2xl font-semibold mb-2">Employees</h2>
+          {employees && employees.length > 0 ? (
+            <ul className="space-y-2">
+              {employees.map(emp => (
+                <li key={emp.id} className="p-2 border rounded">
+                  <p className="font-medium">{emp.first_name} {emp.last_name}</p>
+                  <p className="text-sm text-gray-600">{emp.email}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No employees listed.</p>
+          )}
+        </div>
         
-        {user ? (
-          <BookingForm company={company} user={user} onBook={() => alert('Booking successful!')} />
+        {isProviderOrAdmin ? (
+          <AdminDashboard company={company} user={user} />
+        ) : user ? (
+          <BookingForm company={company} onBook={() => alert('Booking successful!')} />
         ) : (
           <div className="text-center bg-yellow-100 p-4 rounded-md">
             <p>Please log in to make a booking.</p>

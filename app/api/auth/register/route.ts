@@ -59,7 +59,14 @@ export async function POST(request: NextRequest) {
       updatedAt: newUser.updatedAt,
     });
 
-    return NextResponse.json({ success: true, data: tokenResponse });
+    const response = NextResponse.json({ success: true, data: tokenResponse });
+    response.cookies.set('token', tokenResponse.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      sameSite: 'strict',
+      path: '/',
+    });
+    return response;
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(

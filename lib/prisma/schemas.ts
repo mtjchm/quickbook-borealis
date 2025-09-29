@@ -9,6 +9,16 @@ export const idParamSchema = z.object({
   }, z.number().int().positive()),
 });
 
+// Explicit schema for company id route params (alias of idParamSchema but exported
+// with a clearer name for company-specific routes)
+export const companyIdParamSchema = z.object({
+  id: z.preprocess((v) => {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.length) return Number(v);
+    return NaN;
+  }, z.number().int().positive()),
+});
+
 export const patchBookingSchema = z.object({
   status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
   notes: z.string().nullable().optional(),
@@ -18,7 +28,6 @@ export const patchBookingSchema = z.object({
 });
 
 export const postBookingSchema = z.object({
-  customerId: z.number().int().positive().optional().nullable(),
   companyId: z.number().int().positive(),
   bookingDate: z
     .string()
@@ -43,7 +52,6 @@ export const patchCompanySchema = z.object({
   serviceDescription: z.string().nullable().optional(),
   durationMinutes: z.number().int().positive().nullable().optional(),
   price: z.union([z.string(), z.number()]).nullable().optional(),
-  isActive: z.boolean().optional(),
 });
 
 export const uploadImageSchema = z.object({
@@ -64,4 +72,20 @@ export const registerSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   phone: z.string().optional().nullable(),
+});
+
+export const employeeIdParamSchema = z.object({
+  id: z.preprocess((v) => {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.length) return Number(v);
+    return NaN;
+  }, z.number().int().positive()),
+});
+
+export const patchEmployeeSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  role: z.enum(['customer', 'provider', 'admin']).optional(),
+  companyId: z.number().int().positive().nullable().optional(),
 });

@@ -45,7 +45,14 @@ export async function POST(request: NextRequest) {
       updatedAt: user.updatedAt,
     });
 
-    return NextResponse.json({ success: true, data: tokenResponse });
+    const response = NextResponse.json({ success: true, data: tokenResponse });
+    response.cookies.set('token', tokenResponse.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      sameSite: 'strict',
+      path: '/',
+    });
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

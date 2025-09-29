@@ -1,9 +1,9 @@
-
 'use client';
 
 import { useState } from 'react';
 
-export default function BookingForm({ company, user, onBook }) {
+export default function BookingForm({ company, onBook }) {
+
   const [bookingDate, setBookingDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [notes, setNotes] = useState('');
@@ -21,10 +21,8 @@ export default function BookingForm({ company, user, onBook }) {
       return;
     }
 
-    // Combine date and time for startTime and calculate endTime
     const startDateTime = new Date(`${bookingDate}T${startTime}`);
-    // For simplicity, let's assume a fixed duration, e.g., 1 hour.
-    // In a real app, this would come from the company's service details.
+    // assume 1 hour
     const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
 
     try {
@@ -32,8 +30,8 @@ export default function BookingForm({ company, user, onBook }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           companyId: company.id,
           bookingDate: startDateTime.toISOString(),
@@ -48,7 +46,6 @@ export default function BookingForm({ company, user, onBook }) {
         throw new Error(data.error?.message || 'Booking failed');
       }
 
-      alert('Booking successful!');
       if (onBook) {
         onBook(data.data);
       }
@@ -107,4 +104,3 @@ export default function BookingForm({ company, user, onBook }) {
     </form>
   );
 }
-

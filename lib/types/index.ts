@@ -1,7 +1,8 @@
 export enum Role {
   CUSTOMER = "customer",
-  PROVIDER = "provider",
+  EMPLOYEE = "employee",
   ADMIN = "admin",
+  PROVIDER = "provider",
 }
 
 export enum BookingStatus {
@@ -13,9 +14,9 @@ export enum BookingStatus {
 export interface JWTPayload {
   userId: number;
   email: string;
-  role: Role; 
-  iat?: number; 
-  exp?: number;  
+  role: Role;
+  iat?: number;
+  exp?: number;
 }
 
 export interface LoginRequest {

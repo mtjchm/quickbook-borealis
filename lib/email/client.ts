@@ -1,7 +1,6 @@
 import { BookingData } from "../types/index";
 import { EmailClient } from "@azure/communication-email";
 import dotenv from 'dotenv';
-import { email } from "zod";
 dotenv.config({ path: './.env.local' });
 
 

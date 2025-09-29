@@ -65,23 +65,20 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }) {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          password: formData.password,
-          phone: formData.phone || null, // API očekává phone pole
+          password: formData.password
         }),
       });
       
       const data = await res.json();
-      console.log("Registration response:", data); // Debug log
       
       if (!res.ok || !data.success) {
         // Lepší zpracování chyb z API
         if (data.error && typeof data.error === 'object') {
-          // Zod validation errors
-          const errorMessages = Object.values(data.error.fieldErrors || {}).flat();
           throw new Error(errorMessages.join(', ') || "Chyba při registraci");
         } else if (data.error === 'Email is already registered') {
           throw new Error("Email je již zaregistrovaný");

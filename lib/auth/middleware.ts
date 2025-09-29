@@ -2,10 +2,10 @@ import { NextRequest } from 'next/server';
 import { Role, JWTPayload } from '../types';
 import { verifyToken, extractTokenFromHeader } from './jwt';
 
-type UserRole = keyof typeof Role; // 'CUSTOMER' | 'PROVIDER' | 'ADMIN'
+type UserRole = keyof typeof Role;
 
 // Extended request type that includes authenticated user information
-// so we can access it in our route handlers
+// so it can be accessed in route handlers
 export interface AuthenticatedRequest extends NextRequest {
   user: JWTPayload;
 }
@@ -13,17 +13,15 @@ export interface AuthenticatedRequest extends NextRequest {
 //extract JWT token; verify; return user information
 export async function authenticateToken(request: NextRequest): Promise<JWTPayload> {
   try {
-    // Get Authorization header from request
+    // Get token from cookie for logged in users
+    const tokenFromCookie = request.cookies.get('token')?.value;
     const authHeader = request.headers.get('Authorization');
+    const tokenFromHeader = extractTokenFromHeader(authHeader);
 
-    if (!authHeader) {
-      throw new Error('No authorization header provided');
-    }
+    const token = tokenFromCookie || tokenFromHeader;
 
-    // Extract token
-    const token = extractTokenFromHeader(authHeader);
     if (!token) {
-      throw new Error('Invalid authorization header format');
+      throw new Error('No token provided');
     }
 
     const payload = verifyToken(token); // Verify; get user payload

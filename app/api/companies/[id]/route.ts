@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma/prisma';
 import { withAuth } from '../../../../lib/auth/middleware';
-import { z } from 'zod';
-import { idParamSchema, patchCompanySchema } from '../../../../lib/prisma/schemas';
+import { idParamSchema, patchCompanySchema, companyIdParamSchema } from '../../../../lib/prisma/schemas';
+
 import { isCompanyAdmin } from '../../../../lib/utils/utils';
 
 // GET /api/companies/{id}
@@ -10,7 +10,7 @@ import { isCompanyAdmin } from '../../../../lib/utils/utils';
 export const GET = async (request: NextRequest) => {
   // extract id from path and validate
   const rawId = request.nextUrl.pathname.split('/').pop();
-  const parsed = idParamSchema.safeParse({ id: rawId });
+  const parsed = companyIdParamSchema.safeParse({ id: rawId });
 
   if (!parsed.success) {
     return NextResponse.json({ success: false, error: 'Invalid id', details: parsed.error.format() }, { status: 400 });
@@ -20,6 +20,7 @@ export const GET = async (request: NextRequest) => {
   // fetch company
   const company = await prisma.company.findUnique({
     where: { id },
+    include: { owner: { select: { id: true, firstName: true, lastName: true, email: true } } },
   });
 
   if (!company) {
@@ -31,13 +32,26 @@ export const GET = async (request: NextRequest) => {
     name: company.name,
     description: company.description,
     headerImageUrl: company.headerImageUrl,
+    ownerId: company.ownerId,
     address: company.address,
     phone: company.phone,
     email: company.email,
     serviceName: company.serviceName,
+    businessHours: null,
     createdAt: company.createdAt.toISOString(),
     updatedAt: company.updatedAt.toISOString(),
   };
+
+  // attempt to parse businessHours JSON string if present
+  if (company.businessHours) {
+    try {
+      out.businessHours = JSON.parse(company.businessHours);
+    } catch (e) {
+      console.error('Failed to parse businessHours JSON', e);
+    }
+  }
+
+  // TODO: fetch owner from api/company/{id}/employees/{id} to display info
 
   return NextResponse.json({ success: true, data: out });
 };
@@ -45,10 +59,10 @@ export const GET = async (request: NextRequest) => {
 // only company owner or global admin may update
 export const PATCH = withAuth(async (request: NextRequest) => {
   const rawId = request.nextUrl.pathname.split('/').pop();
-  const parsed = idParamSchema.safeParse({ id: rawId });
+  const parsed = companyIdParamSchema.safeParse({ id: rawId });
 
   if (!parsed.success) {
-    return NextResponse.json({ success: false, error: 'Invalid id', details: parsed.error.format() }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'Invalid id', details: parsed.error._zod }, { status: 400 });
   }
   const id = parsed.data.id;
 
@@ -62,7 +76,7 @@ export const PATCH = withAuth(async (request: NextRequest) => {
 
   const bodyParsed = patchCompanySchema.safeParse(body);
   if (!bodyParsed.success) {
-    return NextResponse.json({ success: false, error: 'Invalid body', details: bodyParsed.error.format() }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'Invalid body', details: bodyParsed.error._zod }, { status: 400 });
   }
 
   // fetch company to check permissions
@@ -88,7 +102,6 @@ export const PATCH = withAuth(async (request: NextRequest) => {
   if (data.serviceName !== undefined) updateData.serviceName = data.serviceName;
   if (data.serviceDescription !== undefined) updateData.serviceDescription = data.serviceDescription;
   if (data.durationMinutes !== undefined) updateData.durationMinutes = data.durationMinutes;
-  if (data.isActive !== undefined) updateData.isActive = data.isActive;
   if (data.price !== undefined) {
     // prisma Decimal accepts string or number; convert null explicitly
     updateData.price = data.price === null ? null : (typeof data.price === 'string' ? data.price : Number(data.price));
@@ -124,7 +137,7 @@ export const PATCH = withAuth(async (request: NextRequest) => {
 
 export const DELETE = withAuth(async (request: NextRequest) => {
   const rawId = request.nextUrl.pathname.split('/').pop();
-  const parsed = idParamSchema.safeParse({ id: rawId });
+  const parsed = companyIdParamSchema.safeParse({ id: rawId });
 
   if (!parsed.success) {
     return NextResponse.json({ success: false, error: 'Invalid id', details: parsed.error.format() }, { status: 400 });
