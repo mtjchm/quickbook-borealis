@@ -10,7 +10,7 @@ export default function Home() {
   if (!user) {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen gap-2 bg-gray-100 py-8">
-        <h1 className="text-3xl font-bold mb-4">QuickBook Borealis – Rezervační systém {process.env.AZURE_SQL_SERVER}</h1>
+        <h1 className="text-3xl font-bold mb-4">QuickBook Borealis – Rezervační systém</h1>
         <AuthForm onLogin={setUser} />
       </main>
     );
