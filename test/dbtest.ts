@@ -19,7 +19,7 @@ export async function createUser(
 ) {
     const resolvedEmail = email ?? uniqueEmail(role ?? "user");
     const resolvedRole = role ?? "customer";
-    const data: Prisma.UserCreateInput = {
+    const data = {
         email: resolvedEmail,
         passwordHash: passwordHash ?? "dev-hash",
         role: resolvedRole,

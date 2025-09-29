@@ -39,13 +39,3 @@ Quickbook is designed is:
 
 ## quickbook-borealis
 An appliaction for companies to manage reservation.
-
-
------
-- admin dashboard funguje castecne (heslo pro ovsechny example ucty je hello, hashnula jsem to mimo)\
-- je tam react.use() error v page.js kterou jsem nestihla vyresit protoze neumim react\
-```
-cd ./lib/prisma
-npx ts-node seed.ts
-```
-- frontend je vibecoded, omlouvam se\

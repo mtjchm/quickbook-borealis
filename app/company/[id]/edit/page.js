@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import CompanyEditForm from '../components/CompanyEditForm';
+import CompanyEditForm from '../../../components/CompanyEditForm';
 
 export default function CompanyEditPage({ params }) {
   const [company, setCompany] = useState(null);
