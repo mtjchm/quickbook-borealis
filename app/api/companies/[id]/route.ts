@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma/prisma';
 import { withAuth } from '../../../../lib/auth/middleware';
 import { idParamSchema, patchCompanySchema, companyIdParamSchema } from '../../../../lib/prisma/schemas';
+
 import { isCompanyAdmin } from '../../../../lib/utils/utils';
 
 // GET /api/companies/{id}

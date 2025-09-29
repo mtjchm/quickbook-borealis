@@ -9,6 +9,18 @@ on:
 env:
   APPLICATION_PUBLISH_PROFILE: ${{ secrets.APP_PUBLISH_PROFILE }}
   WEBAPP_NAME: "quickbook-borealis"
+  AZURE_COMMUNICATION_CONNECTION_STRING: ${{ secrets.AZURE_COMMUNICATION_CONNECTION_STRING_SEC }}
+  AZURE_COMMUNICATION_EMAIL_SENDER: ${{ secrets.AZURE_COMMUNICATION_EMAIL_SENDER_SEC }}
+  AZURE_SQL_DATABASE: ${{ secrets.AZURE_SQL_DATABASE_SEC }}
+  AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD_SEC }}
+  AZURE_SQL_PORT: ${{ secrets.AZURE_SQL_PORT_SEC }}
+  AZURE_SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER_SEC }}
+  AZURE_SQL_USER: ${{ secrets.AZURE_SQL_USER_SEC }}
+  AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY_SEC }}
+  AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME_SEC }}
+  AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING_SEC }}
+  AZURE_STORAGE_FILE_SHARE: ${{ secrets.AZURE_STORAGE_FILE_SHARE_SEC }}
+  DATABASE_URL: "sqlserver://${{ secrets.AZURE_SQL_SERVER_SEC }}:${{ secrets.AZURE_SQL_PORT_SEC }};database=${{ secrets.AZURE_SQL_DATABASE_SEC }};user={${{ secrets.AZURE_SQL_USER_SEC }}@quickbook-borealis-server};password={${{ secrets.AZURE_SQL_PASSWORD_SEC }}};encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
 
 jobs:
   build:
@@ -24,23 +36,12 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          echo $DATABASE_URL
           npm install
           npx prisma generate --schema ./lib/prisma/schema.prisma
           npm run build
           mv ./build/static ./build/standalone/build
           mv ./public ./build/standalone
-        env:
-          AZURE_COMMUNICATION_CONNECTION_STRING: ${{ secrets.AZURE_COMMUNICATION_CONNECTION_STRING_SEC }}
-          AZURE_COMMUNICATION_EMAIL_SENDER: ${{ secrets.AZURE_COMMUNICATION_EMAIL_SENDER_SEC }}
-          AZURE_SQL_DATABASE: ${{ secrets.AZURE_SQL_DATABASE_SEC }}
-          AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD_SEC }}
-          AZURE_SQL_PORT: ${{ secrets.AZURE_SQL_PORT_SEC }}
-          AZURE_SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER_SEC }}
-          AZURE_SQL_USER: ${{ secrets.AZURE_SQL_USER_SEC }}
-          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY_SEC }}
-          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME_SEC }}
-          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING_SEC }}
-          AZURE_STORAGE_FILE_SHARE: ${{ secrets.AZURE_STORAGE_FILE_SHARE_SEC }}
 
       - name: "Deploy to Azure Web App"
         id: deploy-to-webapp

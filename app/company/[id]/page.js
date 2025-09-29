@@ -58,6 +58,7 @@ const CompanyPage = ({ params }) => {
     fetchInitialData();
   }, rawId.id);
 
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -72,7 +73,6 @@ const CompanyPage = ({ params }) => {
 
   // Roles are stored as lowercase strings (see lib/types). Normalize/case-check accordingly.
   const isProviderOrAdmin = user && (user.role === 'provider' || user.role === 'admin');
-
   return (
     <main className="flex flex-col items-center min-h-screen bg-gray-100 py-8">
       <div className="w-full max-w-4xl px-4">

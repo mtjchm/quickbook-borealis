@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 export default function BookingForm({ company, onBook }) {
+
   const [bookingDate, setBookingDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [notes, setNotes] = useState('');
